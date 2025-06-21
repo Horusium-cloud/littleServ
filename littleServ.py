@@ -43,7 +43,8 @@ def gumroad_hook():
     except Exception as e:
         print("Erreur :", e)
         return jsonify({"error": str(e)}), 500
-    
+
+@app.route("/")
 def home():
     return "API deployer avec succes !"
 
