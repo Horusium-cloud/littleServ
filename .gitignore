@@ -1,0 +1,14 @@
+# Important folder
+.env
+
+# Python temporary files 
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/
+*.code_workspace
+
+# OS
+.DS_Store
+Thumbs.db
