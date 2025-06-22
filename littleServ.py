@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from supabase import create_client
 import os
-import datetime
+from datetime import datetime, timedelta
 
 # Chargement des variables d'environnement
 load_dotenv()
@@ -21,28 +21,39 @@ def gumroad_hook():
 
     # (Optionnel) Vérifie le secret envoyé par Gumroad
     if GUMROAD_SECRET and data.get("secret") != GUMROAD_SECRET:
-        return jsonify({"error": "Invalid secret"}), 403
+        return jsonify({"statut": "unauthorized"}), 403
 
     try:
         email = data.get("email")
-        product_id = data.get("product_id")
-        license_key = data.get("license_key") or data.get("license")
-        purchase_date = data.get("sale_timestamp")  # format ISO
-        parsed_date = datetime.datetime.fromisoformat(purchase_date.replace("Z", "+00:00"))
+        purchase_date = data.get("sale_timestamp")
+        Sub = supabase.table("Subscriber").select("*").eq("email",email).limit(1).execute()
+        if not Sub.data:
+            response = supabase.table("Subscriber").insert({
+                "email": email,
+            }).execute()
+        else :
+            DateData = supabase.table("Subscriber").select("id").eq("email",email).limit(1).execute()
+            SupData = supabase.table("users").select("id").eq("sub_id",DateData).limit(1).execute()
+            DateData = supabase.table("Licenses").select("expire_at").eq("user_id",SupData).limit(1).execute()
+            purchase_date = datetime.now()
+            if DateData > purchase_date:
+                extended = max(purchase_date, DateData) + timedelta(days=30)
+                supabase.table("License").update({"expire_at":extended}).eq("user_id",SupData).execute()
+            else:
+                extended = DateData + timedelta(days=30)
+                supabase.table("License").update({"expire_at":extended}).eq("user_id",SupData).execute()
 
-        # Insertion dans Supabase
-        response = supabase.table("licences").insert({
-            "email": email,
-            "product_id": product_id,
-            "license_key": license_key,
-            "purchase_date": parsed_date.isoformat()
-        }).execute()
 
         return jsonify({"status": "success", "supabase_response": response.data})
 
     except Exception as e:
         print("Erreur :", e)
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/coucou",method=["GET"])
+def cou():
+    return "tu GET un coucou!"
 
 @app.route("/")
 def home():
