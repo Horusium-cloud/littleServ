@@ -48,7 +48,10 @@ def gumroad_hook():
         charge_date.isoformat().replace("+00:00","Z")
         # Stocke ou met à jour l’abonnement
         supabase.table("Subscriber").upsert({
-            "email": email,
+            "email": email
+        }).execute()
+        supabase.table("Licenses").upsert({
+            "email": email
         }).execute()
         supabase.table("Licenses").upsert({
             "create_at": charge_date.isoformat().replace("+00:00","Z"),
