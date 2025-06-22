@@ -8,15 +8,22 @@ from datetime import datetime, timedelta
 load_dotenv()
 app = Flask(__name__)
 
+payload = request.get_json()
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase = create_client(supabase_url, supabase_key)
 
 # (Optionnel) ta clé secrète pour vérifier le webhook Gumroad
-#GUMROAD_SECRET = os.getenv("GUMROAD_SECRET")
+#GUMROAD_SECRET = os.getenv("GUMROAD_SECRET"
+
 
 @app.route("/gumroad_webhook", methods=["POST"])
 def gumroad_hook():
+    
+    if payload["product_id"] == "izvejp":
+        return "Ignored", 200
+    
+    
     event_type = request.form.get("event")
     data = request.form.to_dict()
     data = request.form.to_dict()
