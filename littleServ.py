@@ -36,10 +36,10 @@ def gumroad_hook():
         check = supabase.table("Licenses").select("is_active").eq("user_id", check).execute()
         if pay :
             if check == False:
-                check = supabase.table("Subscriber").select("Max_Sub").eq("email", email).execute()
-                pay = supabase.table("Subscriber").update({"Max_Sub": pay_sub + timedelta(days=30)}).eq("email", email).execute()
+                check = supabase.table("Licenses").update({"is_active" : True}).eq("user_id", check).execute()
+                pay = supabase.table("Licenses").update({"expires_at" : pay_sub + timedelta(days=30)}).eq("user_id", check).execute()
             else:
-                pay = supabase.table("Subscriber").update({"Max_Sub": pay_sub + timedelta(days=30)}).eq("email", email).execute()
+                pay = supabase.table("Licenses").update({"expires_at" : pay_sub + timedelta(days=30)}).eq("user_id", check).execute()
                 return jsonify({"message": "Subscribe updated"}), 200
         return jsonify({"error": "No Subscribe found"}), 400
 
@@ -50,12 +50,18 @@ def gumroad_hook():
         supabase.table("Subscriber").upsert({
             "email": email
         }).execute()
+        placeholder = supabase.table("Subscriber").select("id").eq("email", email).execute()
+        placeholder = placeholder.data[0]
         supabase.table("users").upsert({
-            "email": email
+            "email": email,
+            "sub_id": placeholder
         }).execute()
+        placeholder = supabase.table("users").select("id").eq("sub_id", placeholder).execute()
+        placeholder = placeholder.data[0]
         supabase.table("Licenses").upsert({
             "create_at": charge_date.isoformat().replace("+00:00","Z"),
             "expires_at": (charge_date + timedelta(days=30)).isoformat().replace("+00:00","Z"),
+            "user.id" : placeholder
         }).execute()
         return jsonify({"message": "Subscribe updated"}), 200
     return jsonify({"error": "Missing data"}), 400
