@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 load_dotenv()
 app = Flask(__name__)
 
-event_type = request.form.get("event")
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase = create_client(supabase_url, supabase_key)
@@ -18,6 +17,7 @@ GUMROAD_SECRET = os.getenv("GUMROAD_SECRET")
 
 @app.route("/gumroad_webhook", methods=["POST"])
 def gumroad_hook():
+    event_type = request.form.get("event")
     data = request.form.to_dict()
     data = request.form.to_dict()
     
