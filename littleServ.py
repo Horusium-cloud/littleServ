@@ -51,13 +51,13 @@ def gumroad_hook():
             "email": email
         }).execute()
         placeholder = supabase.table("Subscriber").select("id").eq("email", email).execute()
-        placeholder = placeholder.data[0]
+        placeholder = placeholder.data[0]['id']
         supabase.table("users").upsert({
             "email": email,
             "sub_id": placeholder
         }).execute()
         placeholder = supabase.table("users").select("id").eq("sub_id", placeholder).execute()
-        placeholder = placeholder.data[0]
+        placeholder = placeholder.data[0]['id']
         supabase.table("Licenses").upsert({
             "create_at": charge_date.isoformat().replace("+00:00","Z"),
             "expires_at": (charge_date + timedelta(days=30)).isoformat().replace("+00:00","Z"),
