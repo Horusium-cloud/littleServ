@@ -27,6 +27,7 @@ def gumroad_hook():
 
     email = data.get("email")
     charge_date = datetime.now()
+    checkemail = supabase.table("Subscriber").select("id").eq("email", email).execute()
     
     if event_type == "subscription_payment_successful":
         check = supabase.table("Subscriber").select("id").eq("email", email).execute()
@@ -44,7 +45,7 @@ def gumroad_hook():
         return jsonify({"error": "No Subscribe found"}), 400
 
     # Gérer le renouvellement ou l’activation
-    if email :
+    if not checkemail :
         charge_date.isoformat().replace("+00:00","Z")
         # Stocke ou met à jour l’abonnement
         supabase.table("Subscriber").upsert({
