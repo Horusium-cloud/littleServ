@@ -45,14 +45,14 @@ def gumroad_hook():
 
     # Gérer le renouvellement ou l’activation
     if email :
-        charge_date = charge_date.isoformat().replace("+00:00","Z")
+        charge_date.isoformat().replace("+00:00","Z")
         # Stocke ou met à jour l’abonnement
         supabase.table("Subscriber").upsert({
             "email": email,
         }).execute()
         supabase.table("Licenses").upsert({
-            "create_at": charge_date,
-            "expires_at": charge_date + timedelta(days=30),
+            "create_at": charge_date.isoformat().replace("+00:00","Z"),
+            "expires_at": (charge_date + timedelta(days=30)).isoformat().replace("+00:00","Z"),
         }).execute()
         return jsonify({"message": "Subscribe updated"}), 200
     return jsonify({"error": "Missing data"}), 400
