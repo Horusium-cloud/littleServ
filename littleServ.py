@@ -29,8 +29,10 @@ def gumroad_hook():
     charge_date_str = data.get("charge_date")
 
     if charge_date_str and charge_date_str.strip():
+       print("je suis la")
        charge_date = datetime.fromisoformat(charge_date_str.replace("Z", "+00:00"))
     else:
+        print("je suis la")
         charge_date = datetime.now()
 
     
