@@ -50,7 +50,7 @@ def gumroad_hook():
         supabase.table("Subscriber").upsert({
             "email": email
         }).execute()
-        supabase.table("Licenses").upsert({
+        supabase.table("users").upsert({
             "email": email
         }).execute()
         supabase.table("Licenses").upsert({
