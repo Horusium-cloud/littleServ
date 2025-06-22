@@ -13,7 +13,7 @@ supabase_key = os.getenv("SUPABASE_KEY")
 supabase = create_client(supabase_url, supabase_key)
 
 # (Optionnel) ta clé secrète pour vérifier le webhook Gumroad
-GUMROAD_SECRET = os.getenv("GUMROAD_SECRET")
+#GUMROAD_SECRET = os.getenv("GUMROAD_SECRET")
 
 @app.route("/gumroad_webhook", methods=["POST"])
 def gumroad_hook():
@@ -22,8 +22,8 @@ def gumroad_hook():
     data = request.form.to_dict()
     
     # Vérifie la clé secrète
-    if GUMROAD_SECRET and data.get("secret") != GUMROAD_SECRET:
-        return jsonify({"error": "Unvalid key"}), 403
+    #if GUMROAD_SECRET and data.get("secret") != GUMROAD_SECRET:
+        #return jsonify({"error": "Unvalid key"}), 403
 
     email = data.get("email")
     charge_date = data.get("charge_date")
