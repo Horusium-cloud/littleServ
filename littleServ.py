@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 load_dotenv()
 app = Flask(__name__)
 
-payload = request.get_json()
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase = create_client(supabase_url, supabase_key)
@@ -20,6 +19,7 @@ supabase = create_client(supabase_url, supabase_key)
 @app.route("/gumroad_webhook", methods=["POST"])
 def gumroad_hook():
     
+    payload = request.get_json()
     if payload["product_id"] == "izvejp":
         return "Ignored", 200
     
