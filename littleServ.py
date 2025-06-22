@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 load_dotenv()
 app = Flask(__name__)
 
+event_type = request.form.get("event")
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 supabase = create_client(supabase_url, supabase_key)
@@ -18,42 +19,55 @@ GUMROAD_SECRET = os.getenv("GUMROAD_SECRET")
 @app.route("/gumroad_webhook", methods=["POST"])
 def gumroad_hook():
     data = request.form.to_dict()
-
-    # (Optionnel) Vérifie le secret envoyé par Gumroad
+    data = request.form.to_dict()
+    
+    # Vérifie la clé secrète
     if GUMROAD_SECRET and data.get("secret") != GUMROAD_SECRET:
-        return jsonify({"statut": "unauthorized"}), 403
+        return jsonify({"error": "Unvalid key"}), 403
 
-    try:
-        email = data.get("email")
-        purchase_date = data.get("sale_timestamp")
-        Sub = supabase.table("Subscriber").select("*").eq("email",email).limit(1).execute()
-        if not Sub.data:
-            response = supabase.table("Subscriber").insert({
-                "email": email,
-            }).execute()
-        else :
-            DateData = supabase.table("Subscriber").select("id").eq("email",email).limit(1).execute()
-            SupData = supabase.table("users").select("id").eq("sub_id",DateData).limit(1).execute()
-            DateData = supabase.table("Licenses").select("expire_at").eq("user_id",SupData).limit(1).execute()
-            purchase_date = datetime.now()
-            if DateData > purchase_date:
-                extended = max(purchase_date, DateData) + timedelta(days=30)
-                supabase.table("License").update({"expire_at":extended}).eq("user_id",SupData).execute()
+    email = data.get("email")
+    charge_date = data.get("charge_date")
+    
+    if event_type == "subscription_payment_successful":
+        check = supabase.table("Subscriber").select("id").eq("email", email).execute()
+        check = supabase.table("users").select("id").eq("sub_id", check).execute()
+        pay = supabase.table("Licenses").select("expires_at").eq("user_id", check).execute()
+        check = supabase.table("Licenses").select("is_active").eq("user_id", check).execute()
+        if pay :
+            if check == False:
+                check = supabase.table("Subscriber").select("Max_Sub").eq("email", email).execute()
+                pay = pay + timedelta(days=30)
+                pay = supabase.table("Subscriber").update({"Max_Sub": pay + timedelta(days=30)}).eq("email", email).execute()
             else:
-                extended = DateData + timedelta(days=30)
-                supabase.table("License").update({"expire_at":extended}).eq("user_id",SupData).execute()
+                pay = supabase.table("Subscriber").update({"Max_Sub": pay + timedelta(days=30)}).eq("email", email).execute()
+                return jsonify({"message": "Subscribe updated"}), 200
+        return jsonify({"error": "No Subscribe found"}), 400
 
+    # Gérer le renouvellement ou l’activation
+    if email :
+        # Stocke ou met à jour l’abonnement
+        supabase.table("abonnements").upsert({
+            "email": email,
+            "Buy_time": charge_date,
+        }).execute()
+        return jsonify({"message": "Subscribe updated"}), 200
+    return jsonify({"error": "Missing data"}), 400
 
-        return jsonify({"status": "success", "supabase_response": response.data})
+    
+@app.route("/check_subscription", methods=["POST"])
+def check_subscription():
+    email = request.json.get("email")
+    if not email:
+        return jsonify({"error": "missing email"}), 400
 
-    except Exception as e:
-        print("Erreur :", e)
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/coucou",methods=["GET"])
-def cou():
-    return "tu GET un coucou!"
+    result = supabase.table("Subscriber").select("id").eq("email", email).execute()
+    result = supabase.table("users").select("id").eq("sub_id", result).execute()
+    result = supabase.table("Licenses").select("is_active").eq("user_id", result).execute()
+    if result and result > 0:
+        date_obj = datetime.fromisoformat(result.replace("Z", "+00:00"))
+        if datetime.now() < date_obj + timedelta(days=30):
+            return jsonify({"active": True}), 200
+    return jsonify({"active": False}), 200
 
 @app.route("/")
 def home():
