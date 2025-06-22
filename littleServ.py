@@ -45,7 +45,7 @@ def gumroad_hook():
         return jsonify({"error": "No Subscribe found"}), 400
 
     # Gérer le renouvellement ou l’activation
-    if not checkemail :
+    if len(checkemail.data) == 0 :
         charge_date.isoformat().replace("+00:00","Z")
         # Stocke ou met à jour l’abonnement
         supabase.table("Subscriber").upsert({
