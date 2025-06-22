@@ -26,16 +26,7 @@ def gumroad_hook():
         #return jsonify({"error": "Unvalid key"}), 403
 
     email = data.get("email")
-    charge_date_str = data.get("charge_date")
-
-    print("charge_data=",charge_date_str)
-    if charge_date_str and charge_date_str.strip():
-       print("je suis la")
-       charge_date = datetime.fromisoformat(charge_date_str.replace("Z", "+00:00"))
-    else:
-        print("je suis la")
-        charge_date = datetime.now()
-
+    charge_date = datetime.now()
     
     if event_type == "subscription_payment_successful":
         check = supabase.table("Subscriber").select("id").eq("email", email).execute()
