@@ -51,7 +51,7 @@ def gumroad_hook():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/coucou",method=["GET"])
+@app.route("/coucou",methods=["GET"])
 def cou():
     return "tu GET un coucou!"
 
