@@ -18,12 +18,7 @@ supabase = create_client(supabase_url, supabase_key)
 
 @app.route("/gumroad_webhook", methods=["POST"])
 def gumroad_hook():
-    
-    payload = request.get_json()
-    if payload["product_id"] == "izvejp":
-        return "Ignored", 200
-    
-    
+       
     event_type = request.form.get("event")
     data = request.form.to_dict()
     data = request.form.to_dict()
