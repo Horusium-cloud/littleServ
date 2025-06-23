@@ -68,7 +68,8 @@ def gumroad_hook():
         supabase.table("Licenses").upsert({
             "create_at": charge_date.isoformat().replace("+00:00","Z"),
             "expires_at": (charge_date + timedelta(days=30)).isoformat().replace("+00:00","Z"),
-            "user_id" : placeholder
+            "user_id" : placeholder,
+            "is_active" : True
         }).execute()
         return jsonify({"message": "Subscribe updated"}), 200
     return jsonify({"error": "Missing data"}), 400
