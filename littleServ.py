@@ -36,14 +36,14 @@ def gumroad_hook():
         check = supabase.table("users").select("id").eq("sub_id",check.data[0]["id"]).execute()
         pay = supabase.table("Licenses").select("expires_at").eq("user_id",check.data[0]["id"]).execute()
         check = supabase.table("Licenses").select("is_active").eq("user_id",check.data[0]["id"]).execute()
-        check = check.data[0]["is_active"]
+        check_bool = check.data[0]["is_active"]
         if pay :
-            if check == False:
-                check = supabase.table("Licenses").update({"is_active" : True}).eq("user_id", check).execute()
-                supabase.rpc("ajouter_un_mois", {"user_id_input": check}).execute()
+            if check_bool == False:
+                check = supabase.table("Licenses").update({"is_active" : True}).eq("user_id",check.data[0]["id"]).execute()
+                supabase.rpc("ajouter_un_mois", {"user_id_input":check.data[0]["id"]}).execute()
                 return jsonify({"message": "Subscribe updated"}), 200
             else:
-                supabase.rpc("ajouter_un_mois", {"user_id_input": check}).execute()
+                supabase.rpc("ajouter_un_mois", {"user_id_input":check.data[0]["id"]}).execute()
                 return jsonify({"message": "Subscribe updated"}), 200
         return jsonify({"error": "No Subscribe found"}), 400
 
